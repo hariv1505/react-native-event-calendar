@@ -27,6 +27,8 @@ export default class DayView extends React.Component {
   constructor(props) {
     super(props);
     this.calendarHeight = (props.end - props.start) * 100;
+    this.dayStart = props.start;
+    this.dayEnd = props.end;
     const width = props.width - LEFT_MARGIN;
     const packedEvents = populateEvents(props.events, width, props.start);
     this.state = {
@@ -64,7 +66,12 @@ export default class DayView extends React.Component {
         ),
         packedEvents,
       });
-      if (this.props.events.length == 0 && nextProps.events.length > 0) {
+      const scrollToEvent = packedEvents.filter(
+        event => event.scrollTo == true
+      )[0];
+      if (scrollToEvent) {
+        this.scrollToEvent(scrollToEvent);
+      } else if (this.props.events.length == 0 && nextProps.events.length > 0) {
         this.scrollToFirst();
       }
     }
@@ -91,6 +98,17 @@ export default class DayView extends React.Component {
         });
       }
     }, 1);
+  }
+
+  scrollToEvent(event) {
+    let scrollPosition =
+      event.top - this.calendarHeight / (this.dayEnd - this.dayStart);
+    this._scrollView.scrollTo({
+      x: 0,
+      y: scrollPosition,
+      animated: true,
+    });
+    event.scrollTo = false;
   }
 
   _renderRedLine() {
